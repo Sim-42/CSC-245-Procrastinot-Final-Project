@@ -1,0 +1,344 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "<Practical API Title>",
+    "version": "1.0",
+    "description": "<hopefully a practical api>"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5001/se-world-intermediate/us-central1/helloWorld",
+      "description": "dev"
+    }
+  ],
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/rooms/{roomId}": {
+      "get": {
+        "summary": "Get Room",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Room" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "examples": { "nf": { "value": { "message": "roomId not found" } } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms": {
+      "post": {
+        "summary": "Create Room",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateRoomRequest" },
+              "examples": {
+                "happyPath": {
+                  "summary": "Valid create payload",
+                  "value": { "name": "Algebra Hour", "mode": "pomodoro", "description": "Optional", "users": [] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Room created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RoomExtended" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "examples": { "bad": { "value": { "message": "invalid payload" } } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms/{roomId}/memberships": {
+      "post": {
+        "summary": "Join a Room",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/JoinRoomRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully joined room",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Room" } }
+            }
+          },
+          "400": { "description": "Invalid invite code" }
+        }
+      }
+    },
+    "/users/{userId}/rooms": {
+      "get": {
+        "summary": "See My Rooms",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of rooms for the user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Room" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms/{roomId}/sessions": {
+      "post": {
+        "summary": "Start a Session",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/StartSessionRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully created session",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Session" } }
+            }
+          },
+          "400": { "description": "Room not found" }
+        }
+      }
+    },
+    "/rooms/{roomId}/sessions/{sessionId}/users": {
+      "post": {
+        "summary": "Join a Session",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "sessionId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/JoinSessionRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully joined session",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/TaskList" } }
+            }
+          },
+          "400": { "description": "Error joining session" }
+        }
+      }
+    },
+    "/rooms/{roomId}/sessions/{sessionId}/users/{userId}": {
+      "patch": {
+        "summary": "Track Progress",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "sessionId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TaskList" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated tasks",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TaskList" } } }
+          }
+        }
+      }
+    },
+    "/rooms/{roomId}/sessions/{sessionId}": {
+      "get": {
+        "summary": "Get Session Status",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "sessionId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session info with users",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SessionStatus" } } }
+          }
+        }
+      }
+    },
+    "/users/{userId}/friends": {
+      "get": {
+        "summary": "See Focus Friends",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of friends",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/UserStatus" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateRoomRequest": {
+        "type": "object",
+        "required": ["name", "mode"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+          "mode": { "type": "string", "enum": ["pomodoro", "deep"] },
+          "description": { "type": "string" },
+          "users": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "RoomExtended": {
+        "type": "object",
+        "required": ["id", "name", "owner", "inviteCode"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "users": { "type": "array", "items": { "type": "string" } },
+          "owner": { "type": "string" },
+          "inviteCode": { "type": "string" },
+          "mode": { "type": "string", "enum": ["pomodoro", "deep"] }
+        }
+      },
+      "JoinRoomRequest": {
+        "type": "object",
+        "required": ["inviteCode"],
+        "properties": { "inviteCode": { "type": "string" } }
+      },
+      "StartSessionRequest": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string" },
+          "name": { "type": "string" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "mode": { "type": "string" },
+          "duration": { "type": "integer" },
+          "description": { "type": "string" }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "sessionId": { "type": "string" },
+          "owner": { "type": "string" },
+          "name": { "type": "string" },
+          "startTime": { "type": "string" },
+          "mode": { "type": "string" },
+          "duration": { "type": "integer" },
+          "description": { "type": "string" }
+        }
+      },
+      "JoinSessionRequest": {
+        "type": "object",
+        "properties": {
+          "tasks": {
+            "type": "array",
+            "items": { "type": "object", "properties": { "name": { "type": "string" } } }
+          }
+        }
+      },
+      "TaskList": {
+        "type": "object",
+        "properties": {
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "taskId": { "type": "string" },
+                "name": { "type": "string" },
+                "complete": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "SessionStatus": {
+        "type": "object",
+        "properties": {
+          "session": { "$ref": "#/components/schemas/Session" },
+          "users": { "type": "array", "items": { "$ref": "#/components/schemas/UserStatus" } }
+        }
+      },
+      "UserStatus": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string" },
+          "activeSessions": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "Room": {
+        "type": "object",
+        "required": ["id", "name", "mode", "inviteCode"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "mode": { "type": "string", "enum": ["pomodoro", "deep"] },
+          "inviteCode": { "type": "string" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["message"],
+        "properties": { "message": { "type": "string" } }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    }
+  }
+}

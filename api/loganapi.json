@@ -1,0 +1,382 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Procrastinot API Extended",
+        "version": "1.1.0",
+        "description": "Extended API for managing focus rooms, participants, sessions, and progress tracking."
+    },
+    "servers": [
+        {
+            "url": "http://localhost:5000",
+            "description": "dev"
+        }
+    ],
+    "paths": {
+        "/rooms": {
+            "post": {
+                "summary": "Create a Room",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateRoomRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Room created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoomFull"
+                                }
+                            }
+                        }
+                    },
+                    "400": { "description": "Invalid request body" }
+                }
+            }
+        },
+
+        "/rooms/{roomId}/memberships": {
+            "post": {
+                "summary": "Join a Room",
+                "parameters": [
+                    {
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/JoinRoomRequest" }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Room joined successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/RoomFull" }
+                            }
+                        }
+                    },
+                    "400": { "description": "Invalid invite code" },
+                    "404": { "description": "Room not found" }
+                }
+            }
+        },
+
+        "/users/{userId}/rooms": {
+            "get": {
+                "summary": "List Rooms a User Is In",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User's rooms",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": { "$ref": "#/components/schemas/RoomFull" }
+                                }
+                            }
+                        }
+                    },
+                    "404": { "description": "User not found" }
+                }
+            }
+        },
+
+        "/rooms/{roomId}/sessions": {
+            "post": {
+                "summary": "Start a Session",
+                "parameters": [
+                    {
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/StartSessionRequest" }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Session created",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/SessionFull" }
+                            }
+                        }
+                    },
+                    "400": { "description": "Invalid session data" },
+                    "404": { "description": "Room not found" }
+                }
+            }
+        },
+
+        "/rooms/{roomId}/sessions/{sessionId}/users": {
+            "post": {
+                "summary": "Join a Session",
+                "parameters": [
+                    { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } },
+                    { "name": "sessionId", "in": "path", "required": true, "schema": { "type": "string" } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/JoinSessionRequest" }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Joined session",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/TaskList" }
+                            }
+                        }
+                    },
+                    "400": { "description": "Invalid request" },
+                    "404": { "description": "Session or room not found" }
+                }
+            }
+        },
+
+        "/rooms/{roomId}/sessions/{sessionId}/users/{userId}": {
+            "patch": {
+                "summary": "Update User Progress in Session",
+                "parameters": [
+                    { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } },
+                    { "name": "sessionId", "in": "path", "required": true, "schema": { "type": "string" } },
+                    { "name": "userId", "in": "path", "required": true, "schema": { "type": "string" } }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/TaskList" }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Progress updated",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/TaskList" }
+                            }
+                        }
+                    },
+                    "400": { "description": "Invalid task list" },
+                    "404": { "description": "User, session, or room not found" }
+                }
+            }
+        },
+
+        "/rooms/{roomId}/sessions/{sessionId}": {
+            "get": {
+                "summary": "Get Session Status",
+                "parameters": [
+                    { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } },
+                    { "name": "sessionId", "in": "path", "required": true, "schema": { "type": "string" } }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session status",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/SessionWithUsers" }
+                            }
+                        }
+                    },
+                    "404": { "description": "Session not found" }
+                }
+            }
+        },
+
+        "/users/{userId}/friends": {
+            "get": {
+                "summary": "List Friends",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Friends list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": { "$ref": "#/components/schemas/UserFriend" }
+                                }
+                            }
+                        }
+                    },
+                    "404": { "description": "User not found" }
+                }
+            }
+        }
+    },
+
+    "components": {
+        "schemas": {
+            "CreateRoomRequest": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                    "name": { "type": "string" },
+                    "description": { "type": "string" },
+                    "users": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    }
+                }
+            },
+
+            "RoomFull": {
+                "type": "object",
+                "required": ["roomId", "name", "owner"],
+                "properties": {
+                    "roomId": { "type": "string" },
+                    "name": { "type": "string" },
+                    "description": { "type": "string" },
+                    "users": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    },
+                    "owner": { "type": "string" },
+                    "inviteCode": { "type": "string" }
+                }
+            },
+
+            "JoinRoomRequest": {
+                "type": "object",
+                "required": ["inviteCode"],
+                "properties": {
+                    "inviteCode": { "type": "string" }
+                }
+            },
+
+            "StartSessionRequest": {
+                "type": "object",
+                "required": ["owner", "name", "startTime", "mode", "duration"],
+                "properties": {
+                    "owner": { "type": "string" },
+                    "name": { "type": "string" },
+                    "startTime": { "type": "string", "format": "date-time" },
+                    "mode": { "type": "string" },
+                    "duration": { "type": "integer" },
+                    "description": { "type": "string" }
+                }
+            },
+
+            "SessionFull": {
+                "type": "object",
+                "required": ["sessionId", "owner", "name", "startTime", "mode", "duration"],
+                "properties": {
+                    "sessionId": { "type": "string" },
+                    "owner": { "type": "string" },
+                    "name": { "type": "string" },
+                    "startTime": { "type": "string", "format": "date-time" },
+                    "mode": { "type": "string" },
+                    "duration": { "type": "integer" },
+                    "description": { "type": "string" }
+                }
+            },
+
+            "JoinSessionRequest": {
+                "type": "object",
+                "properties": {
+                    "tasks": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    }
+                }
+            },
+
+            "TaskList": {
+                "type": "object",
+                "properties": {
+                    "tasks": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["taskId", "name", "complete"],
+                            "properties": {
+                                "taskId": { "type": "string" },
+                                "name": { "type": "string" },
+                                "complete": { "type": "boolean" }
+                            }
+                        }
+                    }
+                }
+            },
+
+            "SessionWithUsers": {
+                "type": "object",
+                "required": ["session", "users"],
+                "properties": {
+                    "session": {
+                        "$ref": "#/components/schemas/SessionFull"
+                    },
+                    "users": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/Participant" }
+                    }
+                }
+            },
+
+            "Participant": {
+                "type": "object",
+                "required": ["userId", "displayName"],
+                "properties": {
+                    "userId": { "type": "string" },
+                    "displayName": { "type": "string" }
+                }
+            },
+
+            "UserFriend": {
+                "type": "object",
+                "required": ["name", "status"],
+                "properties": {
+                    "name": { "type": "string" },
+                    "status": { "type": "string" },
+                    "activeSessions": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/SessionFull" }
+                    }
+                }
+            }
+        }
+    }
+}
