@@ -1,11 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
-// Combined all necessary Auth imports
-import { getAuth, connectAuthEmulator, GoogleAuthProvider } from "firebase/auth"; 
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 
-// The 'projectId' error suggests you should double-check these values.
-// Ensure they are exactly as provided by Firebase.
 const firebaseConfig = {
   apiKey: "AIzaSyAonDkU9dVvmoS9VUAEHZcOxuquAnCdYmU",
   authDomain: "se-world-intermediate.firebaseapp.com",
@@ -16,22 +11,7 @@ const firebaseConfig = {
   measurementId: "G-3N93778FTW"
 };
 
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const functions = getFunctions(app);
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
-
-// Connect to emulators if running locally
-if (window.location.hostname === "localhost") {
-  console.log("Development mode: Connecting to local Firebase emulators...");
-  connectFirestoreEmulator(db, 'localhost', 8080);
-  connectFunctionsEmulator(functions, 'localhost', 5001);
-  connectAuthEmulator(auth, 'http://localhost:9099');
-} else {
-  console.log("Production mode: Connecting to live Firebase services.");
-}
-
-export { app, db, functions, auth, googleProvider };
+export const auth = getAuth(app);
+// Note: We removed the "connectAuthEmulator" lines.
+// This means even locally, you will talk to real Google Auth (which is fine!)

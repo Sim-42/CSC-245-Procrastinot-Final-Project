@@ -1,46 +1,30 @@
-// src/api.js
-import { getAuth } from "firebase/auth";
+// 1. Define URLs
+// Replace "se-world-intermediate" with your actual project ID if it's different
+const LIVE_URL = "https://us-central1-se-world-intermediate.cloudfunctions.net/api";
+const LOCAL_URL = "http://127.0.0.1:5001/se-world-intermediate/us-central1/api";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+// 2. Auto-Switch: Use Local if on localhost, otherwise use Live
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
+  ? LOCAL_URL 
+  : LIVE_URL;
 
-async function fetchWithAuth(endpoint, options = {}) {
-  const user = getAuth().currentUser;
-  if (!user) throw new Error("User not authenticated");
-
-  const token = await user.getIdToken();
-
+export async function fetchWithAuth(endpoint, token, options = {}) {
+  // --- THIS WAS MISSING ---
   const headers = {
-    ...(options.headers || {}),
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    ...options.headers,
   };
+  // ------------------------
 
-  const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
-  if (!res.ok) throw new Error(`API error: ${res.statusText}`);
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers, // This is where it was crashing because 'headers' didn't exist
+  });
 
-  try {
-    return await res.json();
-  } catch {
-    return null;
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `API Error: ${response.statusText}`);
   }
+  return response.json();
 }
-
-// Export reusable API calls (replace with your endpoints)
-export const api = {
-  getRooms: () => fetchWithAuth("/api/rooms"),
-  createRoom: (data) =>
-    fetchWithAuth("/api/rooms", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-  joinRoom: (inviteCode) =>
-    fetchWithAuth("/api/rooms/join", {
-      method: "POST",
-      body: JSON.stringify({ inviteCode }),
-    }),
-  startSession: (roomId, mode) =>
-    fetchWithAuth(`/api/rooms/${roomId}/sessions`, {
-      method: "POST",
-      body: JSON.stringify({ mode }),
-    }),
-};

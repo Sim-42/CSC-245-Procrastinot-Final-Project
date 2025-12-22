@@ -1,11 +1,18 @@
-# Use a Node.js base image
-FROM node:22-bullseye
+# Use Node.js 22 on Debian 12 (Bookworm) for better compatibility
+FROM node:22-bookworm
+
+# --- Install Java 21 ---
+# We copy the Java 21 files directly from the official Eclipse Temurin image
+COPY --from=eclipse-temurin:21-jre /opt/java/openjdk /opt/java/openjdk
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Set the working directory
 WORKDIR /app
 
 # Install dependencies
-RUN apt-get update && apt-get install -y python3 python3-pip python3-venv openjdk-11-jre jq
+# (Removed openjdk-11-jre from here since we added Java 21 above)
+RUN apt-get update && apt-get install -y python3 python3-pip python3-venv jq
 
 # Install Firebase CLI
 RUN npm install -g firebase-tools

@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "firebase": "^12.7.0",
-    "preact": "^10.27.2"
+    "firebase": "^12.2.1",
+    "preact": "^10.27.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",
-    "vite": "^7.2.4"
+    "vite": "^7.1.2"
   }
 }

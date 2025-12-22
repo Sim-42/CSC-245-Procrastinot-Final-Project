@@ -18,14 +18,24 @@
       ]
     }
   ],
-  "hosting": {
-    "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
-  },
+"hosting": {
+  "public": "preact-app/dist",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ],
+  "rewrites": [
+    {
+      "source": "/api/**",
+      "function": "api"
+    },
+    {
+      "source": "**",
+      "destination": "/index.html"
+    }
+  ]
+},
   "emulators": {
     "functions": {
       "port": 5001,
